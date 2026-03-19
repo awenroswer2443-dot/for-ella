@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>For Ella 💛</title>
+  <meta name="description" content="A small interactive apology site for Ella." />
+  <style>
+    :root {
+      --bg-1: #0d1020;
+      --bg-2: #17163b;
+      --rose: #ff8fb1;
+      --gold: #ffd777;
+      --blue: #8fd7ff;
+      --mint: #99f0d4;
+      --text: #f6f2ff;
+      --muted: #d7cce9;
+      --glass: rgba(255,255,255,0.08);
+      --line: rgba(255,255,255,0.12);
+      --shadow: 0 24px 60px rgba(0,0,0,0.28);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,143,177,0.20), transparent 22%),
+        radial-gradient(circle at 85% 18%, rgba(143,215,255,0.18), transparent 20%),
+        radial-gradient(circle at 50% 100%, rgba(255,215,119,0.16), transparent 24%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2) 58%, #120f22);
+      overflow-x: hidden;
+    }
+
+    canvas#sky {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: min(1100px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    .hero,
+    .panel,
+    .letter,
+    .garden,
+    .final-card {
+      background: var(--glass);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+    }
+
+    .hero {
+      padding: 34px;
+      display: grid;
+      gap: 18px;
+      margin-top: 8px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 7vw, 5.6rem);
+      line-height: 0.95;
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+
+    .accent {
+      background: linear-gradient(90deg, var(--rose), var(--gold), var(--blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      font-size: clamp(1.06rem, 2vw, 1.22rem);
+      color: var(--muted);
+      max-width: 800px;
+      margin: 0;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    button,
+    .link-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    button:hover,
+    .link-btn:hover { transform: translateY(-1px); }
+
+    .primary {
+      background: linear-gradient(90deg, var(--rose), #ffb56f);
+      color: #24111a;
+      font-weight: 700;
+      box-shadow: 0 12px 28px rgba(255,143,177,0.25);
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .panel, .letter, .garden, .final-card { padding: 24px; }
+
+    .panel h2, .letter h2, .garden h2, .final-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      letter-spacing: -0.03em;
+    }
+
+    .panel p, .letter p, .garden p, .final-card p {
+      margin: 0 0 10px;
+      color: var(--muted);
+    }
+
+    .stars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .star {
+      min-height: 120px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      color: var(--text);
+      padding: 14px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .star .spark {
+      font-size: 1.4rem;
+      opacity: 0.9;
+    }
+
+    .star .hidden-text {
+      opacity: 0;
+      transform: translateY(6px);
+      transition: .22s ease;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.35;
+    }
+
+    .star.revealed {
+      border-color: rgba(255,215,119,0.35);
+      background: linear-gradient(180deg, rgba(255,215,119,0.14), rgba(255,255,255,0.05));
+    }
+
+    .star.revealed .hidden-text {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .letter-card {
+      margin-top: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(8, 10, 18, 0.24);
+      padding: 18px;
+      min-height: 220px;
+    }
+
+    .typed {
+      white-space: pre-wrap;
+      line-height: 1.7;
+      color: #fff7fe;
+      font-size: 1rem;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 1.1em;
+      transform: translateY(2px);
+      background: linear-gradient(180deg, var(--gold), var(--rose));
+      animation: blink 1s steps(1) infinite;
+      margin-left: 4px;
+      border-radius: 3px;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .patches {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .patch {
+      position: relative;
+      min-height: 120px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .patch::after {
+      content: "tap to grow 🌱";
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .flower {
+      position: absolute;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) scale(0.35);
+      transform-origin: bottom center;
+      transition: transform .3s ease;
+    }
+
+    .patch.grown .flower { transform: translateX(-50%) scale(1); }
+    .patch.grown::after { content: "for you 💐"; }
+
+    .stem {
+      width: 8px;
+      height: 42px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #8ee9b6, #3fa67a);
+      margin: 0 auto;
+    }
+
+    .petals {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      margin: 0 auto -4px;
+    }
+
+    .petal {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 26px;
+      height: 26px;
+      border-radius: 50% 50% 10% 50%;
+      background: linear-gradient(180deg, #ffd5e2, #ff8fb1);
+      transform-origin: 0 0;
+      box-shadow: inset 0 -4px 10px rgba(255,255,255,0.22);
+    }
+
+    .petal:nth-child(1) { transform: rotate(0deg) translate(18px) rotate(45deg); }
+    .petal:nth-child(2) { transform: rotate(72deg) translate(18px) rotate(45deg); }
+    .petal:nth-child(3) { transform: rotate(144deg) translate(18px) rotate(45deg); }
+    .petal:nth-child(4) { transform: rotate(216deg) translate(18px) rotate(45deg); }
+    .petal:nth-child(5) { transform: rotate(288deg) translate(18px) rotate(45deg); }
+
+    .center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff7d9, var(--gold));
+      box-shadow: 0 0 16px rgba(255,215,119,0.35);
+    }
+
+    .final-card {
+      margin-top: 18px;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .promise {
+      font-size: clamp(1.25rem, 2vw, 1.5rem);
+      color: #fff8dc;
+      margin: 10px auto 18px;
+      max-width: 720px;
+    }
+
+    .gentle {
+      color: var(--muted);
+      font-size: 0.98rem;
+      max-width: 720px;
+      margin: 0 auto 14px;
+    }
+
+    .heart-burst {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .floating-heart {
+      position: absolute;
+      font-size: 18px;
+      opacity: 0;
+      animation: rise 2.8s ease forwards;
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(24px) scale(.6); opacity: 0; }
+      15% { opacity: 1; }
+      100% { transform: translateY(-220px) scale(1.25); opacity: 0; }
+    }
+
+    .signature {
+      margin-top: 12px;
+      color: #fff3da;
+      font-weight: 700;
+    }
+
+    .tiny {
+      margin-top: 16px;
+      color: rgba(255,255,255,0.58);
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .stars-grid, .patches { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { width: min(100vw - 18px, 1100px); }
+      .hero, .panel, .letter, .garden, .final-card { padding: 18px; border-radius: 22px; }
+      .stars-grid, .patches { grid-template-columns: 1fr; }
+      .button-row { flex-direction: column; }
+      button, .link-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="sky"></canvas>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="eyebrow">💛 a small page for Ella</span>
+      <h1>Ella,<br><span class="accent">please forgive me.</span></h1>
+      <p class="lead">I know you’re mad, and honestly… fair. I just wanted to make you something small, sweet, and real instead of sending another boring text. If you give this page one minute, I’ll use that minute carefully.</p>
+      <div class="button-row">
+        <button class="primary" id="readLetterBtn">Read my note</button>
+        <button class="secondary" id="sparkBtn">Tap the stars first</button>
+        <button class="secondary" id="bloomBtn">Or grow a tiny garden</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <section class="panel" id="starsSection">
+        <h2>Six honest little things</h2>
+        <p>Tap the cards. No dramatic speeches — just the parts I most want you to know.</p>
+        <div class="stars-grid">
+          <button class="star"><span class="spark">✨</span><span class="hidden-text">I’m sorry for hurting your feelings.</span></button>
+          <button class="star"><span class="spark">🌙</span><span class="hidden-text">You matter to me more than my pride does.</span></button>
+          <button class="star"><span class="spark">💫</span><span class="hidden-text">I should have handled things better. Full stop.</span></button>
+          <button class="star"><span class="spark">⭐</span><span class="hidden-text">I’m not asking you to ignore what happened — just asking for a chance to make it right.</span></button>
+          <button class="star"><span class="spark">🫶</span><span class="hidden-text">If you need space, I’ll respect that too.</span></button>
+          <button class="star"><span class="spark">☀️</span><span class="hidden-text">I’d really love to see you smile at me again.</span></button>
+        </div>
+      </section>
+
+      <section class="letter" id="letterSection">
+        <h2>A proper note</h2>
+        <p>I know “sorry” only means something if it’s sincere — and then backed by better behavior.</p>
+        <div class="letter-card">
+          <div class="typed" id="typed"></div><span class="cursor" id="cursor"></span>
+        </div>
+      </section>
+    </section>
+
+    <section class="garden" id="gardenSection">
+      <h2>Tiny peace offering</h2>
+      <p>If I could bring you flowers through a link, I would. This is the closest HTML can get.</p>
+      <div class="patches">
+        <button class="patch"><span class="flower"><div class="petals"><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="center"></span></div><div class="stem"></div></span></button>
+        <button class="patch"><span class="flower"><div class="petals"><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="center"></span></div><div class="stem"></div></span></button>
+        <button class="patch"><span class="flower"><div class="petals"><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="petal"></span><span class="center"></span></div><div class="stem"></div></span></button>
+      </div>
+    </section>
+
+    <section class="final-card">
+      <div class="heart-burst" id="heartBurst"></div>
+      <h2>That’s really it</h2>
+      <p class="promise">I’m asking for forgiveness because I care about you, miss your warmth, and want the chance to do better.</p>
+      <p class="gentle">No pressure. No guilt trip. Just a genuine <strong>please forgive me</strong> — and if you’re willing, I’d love for us to talk.</p>
+      <div class="button-row" style="justify-content:center">
+        <button class="primary" id="forgiveBtn">Press if there’s a tiny chance</button>
+        <button class="secondary" id="spaceBtn">Or if you need a little space</button>
+      </div>
+      <p class="signature" id="responseLine">Love, C 💛</p>
+      <div class="tiny">made with nerves, hope, and a dangerous amount of CSS</div>
+    </section>
+  </main>
+
+  <script>
+    // Starfield
+    const canvas = document.getElementById('sky');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, stars = [];
+    function resize() {
+      W = canvas.width = innerWidth * devicePixelRatio;
+      H = canvas.height = innerHeight * devicePixelRatio;
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      stars = Array.from({length: Math.min(180, Math.floor(innerWidth / 8))}, () => ({
+        x: Math.random() * innerWidth,
+        y: Math.random() * innerHeight,
+        r: Math.random() * 1.8 + 0.4,
+        a: Math.random() * 0.7 + 0.2,
+        speed: Math.random() * 0.08 + 0.02
+      }));
+    }
+    addEventListener('resize', resize);
+    resize();
+
+    function drawSky() {
+      ctx.clearRect(0,0,innerWidth,innerHeight);
+      for (const s of stars) {
+        s.y += s.speed;
+        if (s.y > innerHeight + 2) { s.y = -2; s.x = Math.random() * innerWidth; }
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(drawSky);
+    }
+    drawSky();
+
+    // Stars reveal
+    document.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('click', () => star.classList.toggle('revealed'));
+    });
+
+    // Typewriter note
+    const letter = `Ella,\n\nI know I messed up, and I know a page can't magically fix feelings. But I wanted to do more than just say “sorry” in the quickest possible way.\n\nI’m sorry for what happened, for the way it made you feel, and for the part I played in making things heavier instead of softer. You deserve patience, honesty, and care from me.\n\nIf you can forgive me, I’d really love that. If you need a little time first, I understand that too. I just want you to know this apology is real.\n\n— C`;
+    const typed = document.getElementById('typed');
+    const cursor = document.getElementById('cursor');
+    let started = false;
+    function typeLetter() {
+      if (started) return;
+      started = true;
+      let i = 0;
+      const tick = () => {
+        typed.textContent = letter.slice(0, i);
+        i += 1;
+        if (i <= letter.length) {
+          setTimeout(tick, i < 20 ? 24 : 16);
+        } else {
+          cursor.style.display = 'none';
+        }
+      };
+      tick();
+    }
+
+    document.getElementById('readLetterBtn').addEventListener('click', () => {
+      document.getElementById('letterSection').scrollIntoView({behavior: 'smooth', block: 'center'});
+      setTimeout(typeLetter, 350);
+    });
+
+    document.getElementById('sparkBtn').addEventListener('click', () => {
+      document.getElementById('starsSection').scrollIntoView({behavior: 'smooth', block: 'center'});
+    });
+
+    document.getElementById('bloomBtn').addEventListener('click', () => {
+      document.getElementById('gardenSection').scrollIntoView({behavior: 'smooth', block: 'center'});
+    });
+
+    // Garden
+    document.querySelectorAll('.patch').forEach((patch, idx) => {
+      patch.addEventListener('click', () => {
+        patch.classList.add('grown');
+        if (idx === 2) {
+          document.getElementById('responseLine').textContent = 'Even if you’re still mad, you’re still lovely. — C 💛';
+        }
+      });
+    });
+
+    // Final actions
+    const burst = document.getElementById('heartBurst');
+    document.getElementById('forgiveBtn').addEventListener('click', () => {
+      document.getElementById('responseLine').textContent = 'If there is a chance, I’ll take good care of it. — C 💛';
+      for (let i = 0; i < 18; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'floating-heart';
+        heart.textContent = ['💛','✨','💖','🌙'][Math.floor(Math.random()*4)];
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.bottom = (10 + Math.random() * 20) + 'px';
+        heart.style.animationDelay = (Math.random() * 0.4) + 's';
+        burst.appendChild(heart);
+        setTimeout(() => heart.remove(), 3200);
+      }
+    });
+
+    document.getElementById('spaceBtn').addEventListener('click', () => {
+      document.getElementById('responseLine').textContent = 'That’s okay. Take the time you need — I’ll still mean this. — C 💛';
+    });
+
+    // Start note when visible enough
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) typeLetter();
+      });
+    }, { threshold: 0.35 });
+    observer.observe(document.getElementById('letterSection'));
+  </script>
+</body>
+</html>
